@@ -12,21 +12,6 @@ from model.model2 import MoRFPredictionBranch2
 from model.FusionModel import FusionModel
 
 
-# #----------- 原始Focal Loss -----------
-# class FocalLoss(nn.Module):
-#     def __init__(self, alpha=0.8, gamma=2.0):
-#         super().__init__()
-#         self.alpha = alpha
-#         self.gamma = gamma
-#
-#     def forward(self, inputs, targets, mask_valid):
-#         BCE_loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction='none')
-#         pt = torch.exp(-BCE_loss)
-#         F_loss = self.alpha * (1 - pt) ** self.gamma * BCE_loss
-#         return (F_loss * mask_valid).sum() / mask_valid.sum()
-
-
-#-------------------1-----------------
 class FocalLoss(nn.Module):
     def __init__(self, initial_alpha=0.8, gamma=2.0, label_smoothing=0.1, weight=None, temperature=1.0, grad_clip=None,
                  alpha_step=0.01, patience=5):
