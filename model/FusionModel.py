@@ -4,7 +4,6 @@ import torch.nn.functional as F
 
 
 class Transpose(nn.Module):
-    """ 用于调整维度的转置模块 """
 
     def __init__(self, dim0, dim1):
         super().__init__()
@@ -16,7 +15,6 @@ class Transpose(nn.Module):
 
 
 class SEBlock(nn.Module):
-    """ 通道注意力模块 (Squeeze-and-Excitation) """
 
     def __init__(self, d_model, reduction=16):
         super().__init__()
@@ -40,9 +38,9 @@ class BiLCrossAttention(nn.Module):
         self.fusion = nn.Sequential(
             nn.Conv1d(d_model * 2, d_model, kernel_size=3, padding=1),
             nn.GELU(),
-            Transpose(1, 2),  # 调整维度以适配LayerNorm
+            Transpose(1, 2), 
             nn.LayerNorm(d_model),
-            Transpose(1, 2),  # 恢复维度
+            Transpose(1, 2), 
             nn.Conv1d(d_model, d_model, kernel_size=1),
             nn.GELU()
         )
@@ -60,7 +58,7 @@ class BiLCrossAttention(nn.Module):
         combined = combined.transpose(1, 2)  # [batch_size, 2*d_model, seq_len]
 
         fused = self.fusion(combined)
-        fused = fused.transpose(1, 2)  # 转换为 [batch_size, seq_len, d_model]
+        fused = fused.transpose(1, 2)  # [batch_size, seq_len, d_model]
 
         return fused
 
@@ -68,7 +66,7 @@ class BiLCrossAttention(nn.Module):
 class MultiScaleSmoothing(nn.Module):
     def __init__(self, d_model, scales=(3, 5, 7)):
         super().__init__()
-        # 调整输入通道数为1，输出通道数为1
+
         self.convs = nn.ModuleList([
             nn.Conv1d(1, 1, kernel_size=s, padding=s // 2, bias=False)
             for s in scales
@@ -78,15 +76,12 @@ class MultiScaleSmoothing(nn.Module):
             conv.weight.requires_grad = False
 
     def forward(self, x):
-        # 输入形状应为 (batch_size, 1, seq_len)
-        # 如果输入是2D的 (batch_size, seq_len)，自动添加通道维度
+
         if x.dim() == 2:
             x = x.unsqueeze(1)  # [batch_size, 1, seq_len]
 
-        # 多尺度卷积 + 均值聚合
         smoothed = torch.stack([conv(x) for conv in self.convs], dim=0).mean(0)
-        return smoothed.squeeze(1)  # 输出形状 [batch_size, seq_len]
-
+        return smoothed.squeeze(1) 
 
 class AttentionWeightedFusion(nn.Module):
     def __init__(self, d_model):
@@ -119,7 +114,6 @@ class FusionModel(nn.Module):
 
         self.attention_fusion = AttentionWeightedFusion(d_model)
 
-        # 预测头维度调整
         self.pred_head = nn.Sequential(
             nn.Linear(d_model, d_model // 2),
             nn.GELU(),
@@ -133,14 +127,11 @@ class FusionModel(nn.Module):
         fused1 = self.bil_cross1(x1, x2)  # [batch_size, seq_len, d_model]
         fused2 = self.bil_cross2(x2, x1)  # [batch_size, seq_len, d_model]
 
-        # 注意力加权融合
         combined = self.attention_fusion(fused1, fused2)  # [batch_size, seq_len, d_model]
 
-        # 预测输出
         raw_output = self.pred_head(combined)  # [batch_size, seq_len, 1]
         raw_output = raw_output.squeeze(-1)  # [batch_size, seq_len]
 
-        # 多尺度平滑
         smoothed = self.smoothing(raw_output)  # [batch_size, seq_len]
 
         return smoothed
