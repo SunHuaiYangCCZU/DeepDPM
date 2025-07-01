@@ -4,10 +4,8 @@ from Bio import SeqIO
 from torch.utils.data import Dataset, DataLoader
 import logging
 
-# 配置日志记录
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# 加载ESM-2模型
 model_esm2, alphabet_esm2 = torch.hub.load("facebookresearch/esm:main", "esm2_t33_650M_UR50D")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model_esm2 = model_esm2.to(device).eval()
@@ -27,7 +25,7 @@ class FastaDataset(Dataset):
 
 def collate_fn(batch, max_length=300):
     batch_labels, batch_strs, batch_tokens = batch_converter(batch)
-    batch_tokens = batch_tokens[:, :max_length + 2]  # 保留CLS和EOS
+    batch_tokens = batch_tokens[:, :max_length + 2]  
     return batch_labels, batch_strs, batch_tokens.to(device)
 
 
@@ -36,9 +34,8 @@ def process_batch(batch_tokens, max_length=300):
         results = model_esm2(batch_tokens, repr_layers=[33])
 
     features = results["representations"][33]
-    features = features[:, 1:-1, :]  # 去除CLS和EOS
+    features = features[:, 1:-1, :]  
 
-    # 截断或填充
     seq_len = features.size(1)
     if seq_len < max_length:
         padding = torch.zeros((features.size(0), max_length - seq_len, features.size(2)),
@@ -65,17 +62,14 @@ def main():
     file_path = '/home/ys/sunhuaiyang/predict/case_study/10.fasta'
     output_path = '/home/ys/sunhuaiyang/predict/case_study/feature/10esm_features.npy'
 
-    # 读取并验证数据
     sequences = read_fasta(file_path)
     if not sequences:
         raise ValueError("FASTA文件中未找到有效序列")
 
-    # 创建DataLoader
     dataset = FastaDataset(sequences)
     dataloader = DataLoader(dataset, batch_size=4, shuffle=False,
                             collate_fn=lambda x: collate_fn(x))
 
-    # 批量处理
     all_features = []
     for batch in dataloader:
         _, _, tokens = batch
@@ -89,9 +83,8 @@ def main():
             else:
                 raise
 
-    # 合并结果并保存
     final_features = np.concatenate(all_features, axis=0)
-    np.save(output_path, final_features.astype(np.float32))  # 节省存储空间
+    np.save(output_path, final_features.astype(np.float32)) 
     logging.info(f"特征已保存至 {output_path} (形状: {final_features.shape})")
 
 
