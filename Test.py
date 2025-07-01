@@ -33,27 +33,21 @@ def read_labels_from_fasta(fasta_file, max_len=300):
     return torch.tensor(labels, dtype=torch.float32), torch.tensor(lengths, dtype=torch.int32)
 
 
-# 配置设备
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-# 加载测试数据
 esm2_test = np.load('/home/ys/sunhuaiyang/predict/feature/test/test1_esm2_features.npy')
 t5_test = np.load('/home/ys/sunhuaiyang/predict/feature/test/test1_T5_features.npy')
 
-# 加载标签和长度
 labels, lengths = read_labels_from_fasta('/home/ys/sunhuaiyang/predict/data/test1.fasta')
 
-# 转换为张量
 esm2_tensor = torch.tensor(esm2_test, dtype=torch.float32)
 merged_tensor = torch.tensor(t5_test, dtype=torch.float32)
 labels_tensor = torch.tensor(labels, dtype=torch.float32)
 lengths_tensor = torch.tensor(lengths, dtype=torch.int32)
 
-# 创建数据集
 test_dataset = TensorDataset(merged_tensor, esm2_tensor, labels_tensor, lengths_tensor)
 
-# 存储指标
 fold_metrics = {
     'fold': [], 'accuracy': [], 'auc': [], 'mcc': [],
     'tpr': [], 'fpr': [], 'bacc': [], 'f1': [], 'ap': []
@@ -62,24 +56,20 @@ fold_metrics = {
 for fold_idx in range(5):
     print(f"\nEvaluating Fold {fold_idx + 1}/5")
 
-    # 加载模型
     model_path = f'/home/ys/sunhuaiyang/predict/saved_models/fold{fold_idx + 1}_best.pth'
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=UserWarning)
         checkpoint = torch.load(model_path, map_location=device)
 
-    # 初始化模型
     model1 = MoRFPredictionBranch1(feat_dim=1024).to(device)
     model2 = MoRFPredictionBranch2(input_dim=1280).to(device)
     fusion = FusionModel().to(device)
 
-    # 加载参数
     model1.load_state_dict(checkpoint['model1'])
     model2.load_state_dict({k: v for k, v in checkpoint['model2'].items()
                             if not k.startswith('masking.')}, strict=False)
     fusion.load_state_dict(checkpoint['fusion_model'])
 
-    # 评估模式
     model1.eval()
     model2.eval()
     fusion.eval()
@@ -96,18 +86,15 @@ for fold_idx in range(5):
             labels = labels.to(device)
             lengths = lengths.to(device)
 
-            # 前向传播
             output1 = model1(features_m1, lengths=lengths)
             output2 = model2(features_m2)
             logits = fusion(output1, output2)
 
-            # 收集结果
             probs = torch.sigmoid(logits).cpu().numpy()
             all_probs.append(probs)
             all_labels.append(labels.cpu().numpy())
             all_lengths.append(lengths.cpu().numpy())
 
-    # 处理结果
     final_probs, final_labels = [], []
     for probs, labels, lens in zip(all_probs, all_labels, all_lengths):
         for i in range(len(lens)):
@@ -119,7 +106,6 @@ for fold_idx in range(5):
     final_labels = np.array(final_labels)
     final_preds = (final_probs >= 0.5).astype(int)
 
-    # 计算指标
     try:
         auc = roc_auc_score(final_labels, final_probs)
     except ValueError:
@@ -139,13 +125,11 @@ for fold_idx in range(5):
     bacc = (tpr + (1 - fpr)) / 2
     accuracy = (final_preds == final_labels).mean()
 
-    # 计算AP (Average Precision)
     try:
         ap = average_precision_score(final_labels, final_probs)
     except:
         ap = 0.0
 
-    # 记录指标
     fold_metrics['fold'].append(fold_idx + 1)
     fold_metrics['accuracy'].append(accuracy)
     fold_metrics['auc'].append(auc)
@@ -156,7 +140,6 @@ for fold_idx in range(5):
     fold_metrics['f1'].append(f1)
     fold_metrics['ap'].append(ap)
 
-    # # **保存每条序列的真实标签和模型预测的概率到 CSV 文件**
     saved_results = []
     for i in range(len(final_labels)):
         saved_results.append({
@@ -164,8 +147,7 @@ for fold_idx in range(5):
             'pred_prob': final_probs[i]
         })
 
-    # 将结果保存到模型文件夹中
-    save_path = f'/home/ys/sunhuaiyang/predict/MCC/model_predictions1_fold_{fold_idx + 1}.csv'  # **修改文件名**
+    save_path = f'/home/ys/sunhuaiyang/predict/MCC/model_predictions1_fold_{fold_idx + 1}.csv' 
     results_df = pd.DataFrame(saved_results)
     results_df.to_csv(save_path, index=False)
     print(f"Predictions for Fold {fold_idx + 1} saved to '{save_path}'.")
@@ -174,7 +156,6 @@ for fold_idx in range(5):
     print(f"Accuracy: {accuracy:.4f} | AUC: {auc:.4f} | MCC: {mcc:.4f}")
     print(f"TPR: {tpr:.4f} | FPR: {fpr:.4f} | BACC: {bacc:.4f} | F1: {f1:.4f} | AP: {ap:.4f}")
 
-# 输出汇总
 print("\nSummary of All Folds:")
 print("Fold | Accuracy | AUC    | MCC    | TPR    | FPR    | BACC   | F1    | AP   ")
 for i in range(5):
@@ -186,7 +167,7 @@ for i in range(5):
           f"{fold_metrics['fpr'][i]:.4f} | "
           f"{fold_metrics['bacc'][i]:.4f} | "
           f"{fold_metrics['f1'][i]:.4f} | "
-          f"{fold_metrics['ap'][i]:.4f}")  # **打印 AP**
+          f"{fold_metrics['ap'][i]:.4f}")  
 
 print("\nAverage Metrics:")
 print(f"Accuracy: {np.mean(fold_metrics['accuracy']):.4f} ± {np.std(fold_metrics['accuracy']):.4f}")
@@ -196,4 +177,4 @@ print(f"TPR:      {np.mean(fold_metrics['tpr']):.4f} ± {np.std(fold_metrics['tp
 print(f"FPR:      {np.mean(fold_metrics['fpr']):.4f} ± {np.std(fold_metrics['fpr']):.4f}")
 print(f"BACC:     {np.mean(fold_metrics['bacc']):.4f} ± {np.std(fold_metrics['bacc']):.4f}")
 print(f"F1:       {np.mean(fold_metrics['f1']):.4f} ± {np.std(fold_metrics['f1']):.4f}")
-print(f"AP:       {np.mean(fold_metrics['ap']):.4f} ± {np.std(fold_metrics['ap']):.4f}")  # **打印 AP 的平均值**
+print(f"AP:       {np.mean(fold_metrics['ap']):.4f} ± {np.std(fold_metrics['ap']):.4f}") 
