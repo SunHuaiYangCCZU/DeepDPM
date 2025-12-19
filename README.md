@@ -36,3 +36,15 @@ The proposed DeepDPM method is implemented in Python based on the PyTorch framew
 DeepDPM adopts a dual-branch network architecture and introduces a Bi-directional Local Cross Attention (BiLCrossAttention) module, which effectively fuses multi-source features and thereby significantly improves the accuracy of MoRF prediction.
 
 # Datasets
+DeepDPM provides several pre-split datasets in FASTA format for model training and evaluation, including:
+- `Train.fasta`:  
+  The main training set of DeepDPM, containing protein sequences used for model learning.
+- `Training421.fasta`:  
+  The classical TRAINING421 dataset, consisting of 421 protein sequences. It is one of the commonly used benchmark training sets in the MoRF prediction field.
+- `Test1.fasta` and `Test2.fasta`:  
+  Two newly constructed independent test sets, Test1 and Test2, used to systematically evaluate the generalization ability of DeepDPM under different data distributions. The MCC and AUC values reported in the paper are computed on these two datasets.
+- `Test 419.fasta`:  
+  The classical TEST419 dataset with 419 protein sequences, widely used for performance comparison in previous MoRF prediction methods. It serves as an important benchmark test set in this work.
+- `Test 45.fasta` and `test49.fasta`:  
+  Two additional independent test sets containing 45 and 49 protein sequences, respectively, which can be used to further verify the robustness of DeepDPM on diverse independent data.
+All of the above are protein-sequence-level datasets used for training and testing DeepDPM on the MoRF prediction task.
