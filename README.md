@@ -19,15 +19,20 @@ exhibits reliable and highly accurate performance in the Molecular Recognition F
 prediction task.
 
 # System requirement
-- python  3.9.21
-- numpy  1.26.4 
-- pytorch  1.13.1  
-- pytorch-scatter  2.1.1  
-- pytorch-cluster  1.6.1  
-- pyg  2.3.0  
-- biopython  1.81  
-- fair-esm  2.0.0  
-- dllogger  1.0.0  
-- openfold  1.0.1  
-- sentencepiece  0.1.99  
-- transformers  4.30.1
+- Python == 3.9.21
+- NumPy == 1.26.4
+- PyTorch (torch) == 2.6.0+cu124
+- PyTorch Scatter (torch-scatter) == 2.1.2+pt26cu124
+- PyTorch Cluster (torch-cluster) == 1.6.3+pt26cu124
+- PyTorch Geometric (torch-geometric / pyg) == 2.6.1
+- Biopython == 1.82
+- fair-esm == 2.0.0
+- sentencepiece == 0.2.0
+- transformers == 4.49.0
+- mamba-SSM == 2.2.4
+
+# Description
+The proposed DeepDPM method is implemented in Python based on the PyTorch framework for predicting molecular recognition features (MoRFs) in proteins.  
+DeepDPM adopts a dual-branch network architecture and introduces a Bi-directional Local Cross Attention (BiLCrossAttention) module, which effectively fuses multi-source features and thereby significantly improves the accuracy of MoRF prediction.
+
+# Datasets
