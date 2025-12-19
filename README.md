@@ -17,6 +17,7 @@ Correlation Coefficient (MCC) values of 77.39% and 69.08%, respectively, and Are
 Curve (AUC) values of 97.60% and 92.87%, respectively. These results demonstrate that DeepDPM
 exhibits reliable and highly accurate performance in the Molecular Recognition Features (MoRFs)
 prediction task.
+
 <img width="553" height="619" alt="image" src="https://github.com/user-attachments/assets/4a174722-d101-4fe6-b828-8c3edf5cad9b" />
 
 
