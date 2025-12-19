@@ -48,3 +48,12 @@ DeepDPM provides several pre-split datasets in FASTA format for model training a
 - `Test 45.fasta` and `test49.fasta`:  
   Two additional independent test sets containing 45 and 49 protein sequences, respectively, which can be used to further verify the robustness of DeepDPM on diverse independent data.
 All of the above are protein-sequence-level datasets used for training and testing DeepDPM on the MoRF prediction task.
+
+# Feature
+The `Extract_features` module contains two feature extraction scripts. By simply providing the path to the dataset, users can generate both ESM-2 and Prot-T5 features. All features generated in this study are stored in the `Feature` directory.
+
+# Model
+The model-related code is stored in the `model` directory, which contains three scripts corresponding to the first branch, the second branch, and the fusion module, respectively. The trained models are saved in the `save_model` directory.
+
+# Test
+The testing script is located in Test.py. Before use, you need to modify the model path in the script to point to the directory where the trained models are saved (save_model).
