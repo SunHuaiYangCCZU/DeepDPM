@@ -147,7 +147,7 @@ for fold_idx in range(5):
             'pred_prob': final_probs[i]
         })
 
-    save_path = f'/home/ys/sunhuaiyang/predict/MCC/model_predictions1_fold_{fold_idx + 1}.csv' 
+    save_path = f'/home/ys/sunhuaiyang/predict/save_model/saved_model.csv' 
     results_df = pd.DataFrame(saved_results)
     results_df.to_csv(save_path, index=False)
     print(f"Predictions for Fold {fold_idx + 1} saved to '{save_path}'.")
@@ -178,3 +178,4 @@ print(f"FPR:      {np.mean(fold_metrics['fpr']):.4f} ± {np.std(fold_metrics['fp
 print(f"BACC:     {np.mean(fold_metrics['bacc']):.4f} ± {np.std(fold_metrics['bacc']):.4f}")
 print(f"F1:       {np.mean(fold_metrics['f1']):.4f} ± {np.std(fold_metrics['f1']):.4f}")
 print(f"AP:       {np.mean(fold_metrics['ap']):.4f} ± {np.std(fold_metrics['ap']):.4f}") 
+
