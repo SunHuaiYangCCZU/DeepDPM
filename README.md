@@ -58,5 +58,21 @@ The `Extract_features` module contains two feature extraction scripts. By simply
 # Model
 The model-related code is stored in the `model` directory, which contains three scripts corresponding to the first branch, the second branch, and the fusion module, respectively. The trained models are saved in the `save_model` directory.
 
+# Training Configuration
+Optimizer: AdamW
+Learning rate: 1×10⁻⁴
+Weight decay: 0.01
+Learning rate scheduler: CosineAnnealingLR
+T_max: 100
+Minimum learning rate: 1×10⁻⁶
+Batch size: 32
+Maximum epochs: 100
+Loss function: Focal Loss
+α (initial): 0.8
+γ: 2.0
+Label smoothing: 0.1
+Dynamic α update step: 0.01
+α update patience: 5
+
 # Test
 The testing script is located in Test.py. Before use, you need to modify the model path in the script to point to the directory where the trained models are saved (save_model).
