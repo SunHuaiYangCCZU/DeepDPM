@@ -40,12 +40,8 @@ DeepDPM adopts a dual-branch network architecture and introduces a Bi-directiona
 
 # Datasets
 DeepDPM provides several pre-split datasets in FASTA format for model training and evaluation, including:
-- `Train.fasta`:  
-  The main training set of DeepDPM, containing protein sequences used for model learning.
 - `Training421.fasta`:  
   The classical TRAINING421 dataset, consisting of 421 protein sequences. It is one of the commonly used benchmark training sets in the MoRF prediction field.
-- `Test1.fasta` and `Test2.fasta`:  
-  Two newly constructed independent test sets, Test1 and Test2, used to systematically evaluate the generalization ability of DeepDPM under different data distributions. The MCC and AUC values reported in the paper are computed on these two datasets.
 - `Test 419.fasta`:  
   The classical TEST419 dataset with 419 protein sequences, widely used for performance comparison in previous MoRF prediction methods. It serves as an important benchmark test set in this work.
 - `Test 45.fasta` and `test49.fasta`:  
@@ -69,8 +65,8 @@ The model-related code is stored in the `model` directory, which contains three 
 - Maximum epochs: 100
 - Loss function: Focal Loss
   α (initial): 0.8
-  γ: 2.0
-  Label smoothing: 0.1
+  γ: 1.5
+  Label smoothing: 0.05
   Dynamic α update step: 0.01
   α update patience: 5
 
